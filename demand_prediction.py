@@ -9,7 +9,7 @@ CORS(app)  # Enable CORS if needed
 
 print("Starting Flask API...")
 
-# Try to load the model and print a message
+# Try to load the trained model and log the status
 try:
     model = joblib.load("demand_model.pkl")
     print("Model loaded successfully!")
@@ -31,6 +31,10 @@ FEATURES = [
 
 @app.route('/predict_demand', methods=['GET'])
 def predict_demand():
+    """
+    Example usage:
+    curl "http://127.0.0.1:5000/predict_demand?year=2025&month=7&day_of_week=5&is_weekend=1&is_holiday_season=1&avg_lead_time=120&sum_previous_bookings=50&avg_adr=200&total_children=5"
+    """
     try:
         # Parse input parameters with default values
         year = int(request.args.get("year", 2025))
@@ -54,9 +58,10 @@ def predict_demand():
             "avg_adr": avg_adr,
             "total_children": total_children
         }
-        # Initialize dummy columns to 0
+        # Initialize dummy month columns to 0
         for m_col in DUMMY_MONTH_COLS:
             row_dict[m_col] = 0
+        
         # Set the correct dummy column to 1 for the given month
         month_col = f"month_{month}"
         if month_col in row_dict:
@@ -75,5 +80,5 @@ def predict_demand():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
+    # Bind to 0.0.0.0 so that Railway can route external traffic to your app
     app.run(host="0.0.0.0", port=5000, debug=True)
-
