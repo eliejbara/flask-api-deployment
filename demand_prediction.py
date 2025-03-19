@@ -6,11 +6,12 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Allow all origins
+CORS(app, resources={r"/demand_prediction": {"origins": "https://hotel-on-call.vercel.app"}})
+
 print("Starting Flask API...")
 
 # Get the absolute path to the model file (adjust the path as needed)
-model_file_path =  "demand_model.pkl"  # You can set MODEL_PATH as an env var in Railway
+model_file_path = "demand_model.pkl"
 
 # Try to load the trained model and log the status
 try:
@@ -18,6 +19,7 @@ try:
     print(f"Model loaded successfully from {model_file_path}!")
 except Exception as e:
     print(f"Error loading model from {model_file_path}: {e}")
+    model = None  # Prevent crashes if the model fails to load
 
 # Define the dummy month columns and features order (must match training)
 DUMMY_MONTH_COLS = [f"month_{m}" for m in range(2, 13)]
@@ -32,14 +34,17 @@ FEATURES = [
     "total_children"
 ] + DUMMY_MONTH_COLS
 
-@app.route('/demand_prediction', methods=['GET', 'POST'])
+# Handle CORS preflight requests
+@app.route('/demand_prediction', methods=['OPTIONS'])
+def handle_options():
+    return '', 204  # Empty response for preflight request
 
+@app.route('/demand_prediction', methods=['GET', 'POST'])
 def demand_prediction():
-    """
-    Example usage:
-    curl "http://127.0.0.1:5000/demand_prediction?year=2025&month=7&day_of_week=5&is_weekend=1&is_holiday_season=1&avg_lead_time=120&sum_previous_bookings=50&avg_adr=200&total_children=5"
-    """
     try:
+        if model is None:
+            return jsonify({"error": "Model not loaded"}), 500
+
         # Parse input parameters with default values
         year = int(request.args.get("year", 2025))
         month = int(request.args.get("month", 7))
@@ -50,7 +55,7 @@ def demand_prediction():
         sum_previous_bookings = float(request.args.get("sum_previous_bookings", 5))
         avg_adr = float(request.args.get("avg_adr", 100))
         total_children = float(request.args.get("total_children", 2))
-        
+
         # Build a row dictionary with the features
         row_dict = {
             "year": year,
@@ -62,6 +67,7 @@ def demand_prediction():
             "avg_adr": avg_adr,
             "total_children": total_children
         }
+
         # Initialize dummy month columns to 0
         for m_col in DUMMY_MONTH_COLS:
             row_dict[m_col] = 0
@@ -79,11 +85,11 @@ def demand_prediction():
         prediction = model.predict(X_input)
         predicted_count = int(round(prediction[0]))
         return jsonify({"predicted_room_demand": predicted_count})
+    
     except Exception as e:
         print("Error in prediction:", e)
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    # Bind to 0.0.0.0 so that Railway can route external traffic to your app
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
