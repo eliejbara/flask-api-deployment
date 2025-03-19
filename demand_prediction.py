@@ -6,8 +6,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app, resources={r"/demand_prediction": {"origins": "https://hotel-on-call.vercel.app"}})
-
+CORS(app, resources={r"/demand_prediction/*": {"origins": "*"}}) 
 print("Starting Flask API...")
 
 # Get the absolute path to the model file (adjust the path as needed)
