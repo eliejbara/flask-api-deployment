@@ -11,7 +11,7 @@ CORS(app)  # Enable CORS if needed
 print("Starting Flask API...")
 
 # Get the absolute path to the model file (adjust the path as needed)
-model_file_path = os.getenv("MODEL_PATH", "demand_model.pkl")  # You can set MODEL_PATH as an env var in Railway
+model_file_path =  "demand_model.pkl"  # You can set MODEL_PATH as an env var in Railway
 
 # Try to load the trained model and log the status
 try:
