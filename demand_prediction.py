@@ -33,7 +33,7 @@ FEATURES = [
     "total_children"
 ] + DUMMY_MONTH_COLS
 
-@app.route('/demand_prediction', methods=['GET'])
+@app.route('/api/demand_prediction', methods=['GET'])
 def predict_demand():
     """
     Example usage:
