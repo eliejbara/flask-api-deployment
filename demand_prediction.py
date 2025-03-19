@@ -1,3 +1,4 @@
+import os
 import joblib
 import numpy as np
 import pandas as pd
@@ -9,12 +10,15 @@ CORS(app)  # Enable CORS if needed
 
 print("Starting Flask API...")
 
+# Get the absolute path to the model file (adjust the path as needed)
+model_file_path = os.path.join(os.getcwd(), "demand_model.pkl")
+
 # Try to load the trained model and log the status
 try:
-    model = joblib.load("demand_model.pkl")
+    model = joblib.load(model_file_path)
     print("Model loaded successfully!")
 except Exception as e:
-    print("Error loading model:", e)
+    print(f"Error loading model from {model_file_path}: {e}")
 
 # Define the dummy month columns and features order (must match training)
 DUMMY_MONTH_COLS = [f"month_{m}" for m in range(2, 13)]
@@ -81,8 +85,6 @@ def predict_demand():
 
 if __name__ == '__main__':
     # Bind to 0.0.0.0 so that Railway can route external traffic to your app
-    
     import os
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
-
