@@ -6,7 +6,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS if needed
+CORS(app, resources={r"/api/*": {"origins": "https://hotel-on-call.vercel.app"}})
 
 print("Starting Flask API...")
 
