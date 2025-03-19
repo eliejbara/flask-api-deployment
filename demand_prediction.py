@@ -21,24 +21,13 @@ except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
 
-# Preflight request to handle OPTIONS method
-@app.route('/api/demand-prediction', methods=['OPTIONS'])
-def handle_options():
-    """Handles preflight CORS requests."""
-    response = jsonify({'message': 'Preflight request handled'})
-    response.headers.add('Access-Control-Allow-Origin', 'https://hotel-on-call.vercel.app')
-    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-    return response
-
 # Endpoint to handle prediction
-@app.route('/api/demand-prediction', methods=['GET', 'POST'])
+@app.route('/demand_prediction', methods=['GET'])
 def demand_prediction():
     if model is None:
         return jsonify({"error": "Model failed to load"}), 500
 
     try:
-        # Get query parameters from the request
         year = int(request.args.get("year", 2025))
         month = int(request.args.get("month", 7))
         day_of_week = int(request.args.get("day_of_week", 4))
@@ -58,22 +47,21 @@ def demand_prediction():
         }
 
         # Handle month dummy variables
-        DUMMY_MONTH_COLS = [f"month_{m}" for m in range(2, 13)]  # Adjust to handle months 2 to 12
+        DUMMY_MONTH_COLS = [f"month_{m}" for m in range(2, 13)]
         for m_col in DUMMY_MONTH_COLS:
             row_dict[m_col] = 0
         
-        # Set the month column dynamically based on the request
+        # Set the month column
         month_col = f"month_{month}"
         if month_col in row_dict:
             row_dict[month_col] = 1
 
-        # Feature order (for consistency with the model)
+        # Feature order
         FEATURES = [
             "year", "day_of_week", "is_weekend", "is_holiday_season", "avg_lead_time",
             "sum_previous_bookings", "avg_adr", "total_children"
         ] + DUMMY_MONTH_COLS
 
-        # Create input DataFrame for prediction
         X_input = pd.DataFrame([row_dict])
         X_input = X_input[FEATURES]
 
