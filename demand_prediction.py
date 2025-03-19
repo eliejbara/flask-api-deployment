@@ -11,12 +11,12 @@ CORS(app)  # Enable CORS if needed
 print("Starting Flask API...")
 
 # Get the absolute path to the model file (adjust the path as needed)
-model_file_path = os.path.join(os.getcwd(), "demand_model.pkl")
+model_file_path = os.getenv("MODEL_PATH", "demand_model.pkl")  # You can set MODEL_PATH as an env var in Railway
 
 # Try to load the trained model and log the status
 try:
     model = joblib.load(model_file_path)
-    print("Model loaded successfully!")
+    print(f"Model loaded successfully from {model_file_path}!")
 except Exception as e:
     print(f"Error loading model from {model_file_path}: {e}")
 
@@ -85,6 +85,5 @@ def predict_demand():
 
 if __name__ == '__main__':
     # Bind to 0.0.0.0 so that Railway can route external traffic to your app
-    import os
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
