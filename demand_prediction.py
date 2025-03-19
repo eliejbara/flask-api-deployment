@@ -33,11 +33,11 @@ FEATURES = [
     "total_children"
 ] + DUMMY_MONTH_COLS
 
-@app.route('/predict_demand', methods=['GET'])
+@app.route('/demand_predict', methods=['GET'])
 def predict_demand():
     """
     Example usage:
-    curl "http://127.0.0.1:5000/predict_demand?year=2025&month=7&day_of_week=5&is_weekend=1&is_holiday_season=1&avg_lead_time=120&sum_previous_bookings=50&avg_adr=200&total_children=5"
+    curl "http://127.0.0.1:5000/demand_predict?year=2025&month=7&day_of_week=5&is_weekend=1&is_holiday_season=1&avg_lead_time=120&sum_previous_bookings=50&avg_adr=200&total_children=5"
     """
     try:
         # Parse input parameters with default values
