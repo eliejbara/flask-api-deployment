@@ -33,8 +33,8 @@ FEATURES = [
     "total_children"
 ] + DUMMY_MONTH_COLS
 
-@app.route('/api/demand_prediction', methods=['GET'])
-def predict_demand():
+@app.route('/api/demand_prediction', methods=['GET', 'POST'])
+def demand_prediction():
     """
     Example usage:
     curl "http://127.0.0.1:5000/api/demand_prediction?year=2025&month=7&day_of_week=5&is_weekend=1&is_holiday_season=1&avg_lead_time=120&sum_previous_bookings=50&avg_adr=200&total_children=5"
