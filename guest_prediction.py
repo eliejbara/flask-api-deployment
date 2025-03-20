@@ -13,12 +13,15 @@ print("Starting Flask API...")
 
 # Load the model
 model_file_path = "demand_model.pkl"
+
 try:
-    model = joblib.load(model_file_path)
+    # Load model with compression
+    model = joblib.load(model_file_path, mmap_mode='r')
     print(f"✅ Model loaded successfully from {model_file_path}!")
 except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
+
 
 # Preflight request handler (OPTIONS request)
 @app.route('/api/predict-demand', methods=['OPTIONS'])
