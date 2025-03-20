@@ -7,12 +7,12 @@ from flask_cors import CORS
 app = Flask(__name__)
 
 # Enable CORS for Vercel frontend
-CORS(app, resources={r"/*": {"origins": ["https://hotel-on-call.vercel.app"]}}, supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": ["https://hotel-on-call.vercel.app"]}}, supports_credentials=True)
 
-print("Starting Flask API...")
+print("🚀 Starting Flask API...")
 
-# Load the model
-model_file_path = "demand_model.pkl"
+# Load the model dynamically
+model_file_path = os.getenv("MODEL_PATH", "demand_model.pkl")
 try:
     model = joblib.load(model_file_path)
     print(f"✅ Model loaded successfully from {model_file_path}!")
@@ -20,7 +20,6 @@ except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
 
-# Endpoint to handle prediction
 @app.route('/api/predict-demand', methods=['GET'])
 def predict_demand():
     if model is None:
@@ -29,7 +28,7 @@ def predict_demand():
         return response, 500
 
     try:
-        # Extract parameters with default values
+        # Extract parameters with validation
         params = ["year", "month", "day_of_week", "is_weekend", "is_holiday_season",
                   "avg_lead_time", "sum_previous_bookings", "avg_adr", "total_children"]
         data = {}
@@ -44,6 +43,10 @@ def predict_demand():
         data["year"] = int(data["year"])
         data["month"] = int(data["month"])
         data["day_of_week"] = int(data["day_of_week"])
+
+        # Validate month range (1-12)
+        if not (1 <= data["month"] <= 12):
+            return jsonify({"error": "Invalid month. Must be between 1 and 12."}), 400
 
         # Prepare feature dictionary
         row_dict = {key: data[key] for key in params if key != "month"}
@@ -70,10 +73,20 @@ def predict_demand():
         return response
 
     except Exception as e:
-        print(f"❌ Error during prediction: {e}")
+        print(f"❌ Error during prediction: {e} | Request: {request.args}")
         response = jsonify({"error": str(e)})
         response.headers.add("Access-Control-Allow-Origin", "https://hotel-on-call.vercel.app")
         return response, 500
+
+# Handle CORS preflight requests (important for OPTIONS requests)
+@app.route('/api/predict-demand', methods=['OPTIONS'])
+def handle_options():
+    response = jsonify({"message": "CORS preflight successful"})
+    response.headers.add("Access-Control-Allow-Origin", "https://hotel-on-call.vercel.app")
+    response.headers.add("Access-Control-Allow-Methods", "GET, OPTIONS")
+    response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
+    response.headers.add("Access-Control-Allow-Credentials", "true")
+    return response
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
