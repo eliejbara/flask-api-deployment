@@ -1,8 +1,9 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import os
 import joblib
 import pandas as pd
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import psutil
 
 app = Flask(__name__)
 
@@ -11,14 +12,31 @@ CORS(app, resources={r"/*": {"origins": "https://hotel-on-call.vercel.app", "sup
 
 print("Starting Flask API...")
 
-# Load the model
-model_file_path = "demand_model.pkl"
-try:
-    model = joblib.load(model_file_path)
-    print(f"✅ Model loaded successfully from {model_file_path}!")
-except Exception as e:
-    print(f"❌ Error loading model: {e}")
-    model = None
+# Initialize model as None
+model = None
+
+# Function to log memory usage
+def log_memory_usage():
+    process = psutil.Process(os.getpid())
+    memory_info = process.memory_info()
+    print(f"Memory Usage: {memory_info.rss / (1024 * 1024)} MB")
+
+# Try to load the model
+def load_model():
+    global model
+    model_file_path = "demand_model.pkl"
+    
+    try:
+        log_memory_usage()  # Log memory usage before model loading
+        model = joblib.load(model_file_path)  # Load model only once
+        log_memory_usage()  # Log memory usage after model loading
+        print(f"✅ Model loaded successfully from {model_file_path}!")
+    except Exception as e:
+        print(f"❌ Error loading model: {e}")
+        model = None
+
+# Preload model during server startup
+load_model()
 
 # Preflight request handler (OPTIONS request)
 @app.route('/api/predict-demand', methods=['OPTIONS'])
@@ -72,11 +90,17 @@ def predict_demand():
         FEATURES = list(row_dict.keys())
         X_input = pd.DataFrame([row_dict])[FEATURES]
 
+        # Log memory usage before making the prediction
+        log_memory_usage()
+
         # Make prediction
         prediction = model.predict(X_input)
         predicted_count = int(round(prediction[0]))
 
         print("Prediction result:", predicted_count)  # Log prediction result
+
+        # Log memory usage after making the prediction
+        log_memory_usage()
 
         # Response with headers
         response = jsonify({"predicted_room_demand": predicted_count})
