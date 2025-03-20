@@ -7,7 +7,8 @@ from flask_cors import CORS
 app = Flask(__name__)
 
 # Enable CORS for frontend hosted on Vercel (specific domain)
-CORS(app, resources={r"/*": {"origins": "https://hotel-on-call.vercel.app"}})
+
+CORS(app, resources={r"/*": {"origins": ["https://hotel-on-call.vercel.app", "http://localhost:3000"]}}, supports_credentials=True)
 
 print("Starting Flask API...")
 
