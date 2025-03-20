@@ -12,23 +12,13 @@ CORS(app, resources={r"/*": {"origins": "https://hotel-on-call.vercel.app", "sup
 print("Starting Flask API...")
 
 # Load the model
-
 model_file_path = "demand_model.pkl"
-compressed_model_path = "demand_model_compressed.pkl"
-
-# Compress with level 3 (adjust as needed)
-joblib.dump(joblib.load(model_file_path), compressed_model_path, compress=3)
-
-print("✅ Compressed model saved as:", compressed_model_path)
-
-model_file_path = "demand_model_compressed.pkl"  # Use new file
 try:
-    model = joblib.load(model_file_path, mmap_mode='r')  # Memory-efficient loading
+    model = joblib.load(model_file_path)
     print(f"✅ Model loaded successfully from {model_file_path}!")
 except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
-
 
 # Preflight request handler (OPTIONS request)
 @app.route('/api/predict-demand', methods=['OPTIONS'])
@@ -103,4 +93,4 @@ def predict_demand():
 
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port) this is my file reapply the changes on it
