@@ -11,15 +11,17 @@ CORS(app, resources={r"/*": {"origins": "https://hotel-on-call.vercel.app", "sup
 
 print("Starting Flask API...")
 
-# Load the model
+import gzip
+
 model_file_path = "demand_model_compressed.pkl"
+
 try:
-    model = joblib.load(model_file_path)
+    with gzip.open(model_file_path, 'rb') as f:
+        model = joblib.load(f)
     print(f"✅ Model loaded successfully from {model_file_path}!")
 except Exception as e:
     print(f"❌ Error loading model: {e}")
     model = None
-
 # Preflight request handler (OPTIONS request)
 @app.route('/api/predict-demand', methods=['OPTIONS'])
 def handle_preflight():
