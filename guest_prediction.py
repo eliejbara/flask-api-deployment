@@ -12,11 +12,18 @@ CORS(app, resources={r"/*": {"origins": "https://hotel-on-call.vercel.app", "sup
 print("Starting Flask API...")
 
 # Load the model
-model_file_path = "demand_model.pkl"
 
+model_file_path = "demand_model.pkl"
+compressed_model_path = "demand_model_compressed.pkl"
+
+# Compress with level 3 (adjust as needed)
+joblib.dump(joblib.load(model_file_path), compressed_model_path, compress=3)
+
+print("✅ Compressed model saved as:", compressed_model_path)
+
+model_file_path = "demand_model_compressed.pkl"  # Use new file
 try:
-    # Load model with compression
-    model = joblib.load(model_file_path, mmap_mode='r')
+    model = joblib.load(model_file_path, mmap_mode='r')  # Memory-efficient loading
     print(f"✅ Model loaded successfully from {model_file_path}!")
 except Exception as e:
     print(f"❌ Error loading model: {e}")
