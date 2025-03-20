@@ -6,7 +6,7 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# Enable CORS for Vercel frontend (ensure that it's properly configured for all routes)
+# Enable CORS for Vercel frontend
 CORS(app, resources={r"/*": {"origins": "https://hotel-on-call.vercel.app", "supports_credentials": True}})
 
 print("Starting Flask API...")
@@ -51,6 +51,8 @@ def predict_demand():
                 return jsonify({"error": f"Missing required parameter: {param}"}), 400
             data[param] = float(value)
 
+        print("Data received:", data)  # Log the input data
+
         # Convert necessary values to integers
         data["year"] = int(data["year"])
         data["month"] = int(data["month"])
@@ -64,6 +66,8 @@ def predict_demand():
         for m_col in DUMMY_MONTH_COLS:
             row_dict[m_col] = 1 if m_col == f"month_{data['month']}" else 0
 
+        print("Feature dictionary:", row_dict)  # Log the features before prediction
+
         # Feature order
         FEATURES = list(row_dict.keys())
         X_input = pd.DataFrame([row_dict])[FEATURES]
@@ -71,6 +75,8 @@ def predict_demand():
         # Make prediction
         prediction = model.predict(X_input)
         predicted_count = int(round(prediction[0]))
+
+        print("Prediction result:", predicted_count)  # Log prediction result
 
         # Response with headers
         response = jsonify({"predicted_room_demand": predicted_count})
