@@ -1,8 +1,8 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import os
 import joblib
 import pandas as pd
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -36,6 +36,7 @@ def predict_demand():
     if model is None:
         response = jsonify({"error": "Model failed to load"})
         response.headers.add("Access-Control-Allow-Origin", "https://hotel-on-call.vercel.app")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
         return response, 500
 
     try:
@@ -74,8 +75,6 @@ def predict_demand():
         # Response with headers
         response = jsonify({"predicted_room_demand": predicted_count})
         response.headers.add("Access-Control-Allow-Origin", "https://hotel-on-call.vercel.app")
-        response.headers.add("Access-Control-Allow-Methods", "GET, OPTIONS")
-        response.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization")
         response.headers.add("Access-Control-Allow-Credentials", "true")
         return response
 
@@ -83,6 +82,7 @@ def predict_demand():
         print(f"❌ Error during prediction: {e}")
         response = jsonify({"error": str(e)})
         response.headers.add("Access-Control-Allow-Origin", "https://hotel-on-call.vercel.app")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
         return response, 500
 
 if __name__ == '__main__':
