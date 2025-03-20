@@ -22,7 +22,7 @@ except Exception as e:
     model = None
 
 # Endpoint to handle prediction
-@app.route('/predict_demand', methods=['GET'])
+@app.route('/api/predict-demand', methods=['GET'])
 def demand_prediction():
     if model is None:
         response = jsonify({"error": "Model failed to load"})
