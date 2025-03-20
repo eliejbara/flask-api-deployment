@@ -12,7 +12,7 @@ CORS(app, resources={r"/*": {"origins": "https://hotel-on-call.vercel.app", "sup
 print("Starting Flask API...")
 
 # Load the model
-model_file_path = "demand_model.pkl"
+model_file_path = "demand_model_compressed.pkl"
 try:
     model = joblib.load(model_file_path)
     print(f"✅ Model loaded successfully from {model_file_path}!")
