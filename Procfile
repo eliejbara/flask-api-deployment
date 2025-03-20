@@ -1,1 +1,1 @@
-web: waitress-serve --host=0.0.0.0 --port=5000 demand_prediction:app
+web: waitress-serve --host=0.0.0.0 --port=5000 guest_prediction:app
