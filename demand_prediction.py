@@ -7,7 +7,6 @@ from flask_cors import CORS
 app = Flask(__name__)
 
 # Enable CORS for frontend hosted on Vercel (specific domain)
-
 CORS(app, resources={r"/*": {"origins": ["https://hotel-on-call.vercel.app", "http://localhost:3000"]}}, supports_credentials=True)
 
 print("Starting Flask API...")
@@ -26,7 +25,9 @@ except Exception as e:
 @app.route('/demand_prediction', methods=['GET'])
 def demand_prediction():
     if model is None:
-        return jsonify({"error": "Model failed to load"}), 500
+        response = jsonify({"error": "Model failed to load"})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response, 500
 
     try:
         year = int(request.args.get("year", 2025))
@@ -70,12 +71,16 @@ def demand_prediction():
         prediction = model.predict(X_input)
         predicted_count = int(round(prediction[0]))
 
-        # Return prediction result
-        return jsonify({"predicted_room_demand": predicted_count})
+        # Return prediction result with CORS headers
+        response = jsonify({"predicted_room_demand": predicted_count})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response
 
     except Exception as e:
         print(f"❌ Error during prediction: {e}")
-        return jsonify({"error": str(e)}), 500
+        response = jsonify({"error": str(e)})
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        return response, 500
 
 if __name__ == '__main__':
     # Use the environment port or default to 5000
